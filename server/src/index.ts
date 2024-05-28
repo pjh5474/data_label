@@ -160,6 +160,157 @@ app.post("/api/run-python", express.json(), async (req, res) => {
     });
 });
 
+app.post("/api/save-result", express.json(), async (req, res) => {
+  const imageName = req.body.imageName;
+  const red: number[] = req.body.red;
+  const pink: number[] = req.body.pink;
+  const centImgPath = path.join(
+    __dirname,
+    "../data",
+    imageName,
+    "centroid solid RGB colors"
+  );
+  const avgImgPath = path.join(
+    __dirname,
+    "../data",
+    imageName,
+    "avg cluster RGB colors"
+  );
+  const segImgPath = path.join(
+    __dirname,
+    "../data",
+    imageName,
+    "segmented masks"
+  );
+  const cent_red = path.join(__dirname, "../result", "cent_red");
+  const cent_pink = path.join(__dirname, "../result", "cent_pink");
+  const avg_red = path.join(__dirname, "../result", "avg_red");
+  const avg_pink = path.join(__dirname, "../result", "avg_pink");
+  const seg_red = path.join(__dirname, "../result", "seg_red");
+  const seg_pink = path.join(__dirname, "../result", "seg_pink");
+
+  red.map(async (index: number) => {
+    const cent_image = path.join(centImgPath, `${imageName}_${index}_.jpg`);
+    const avg_image = path.join(avgImgPath, `${imageName}_${index}_.jpg`);
+    const seg_image = path.join(segImgPath, `${imageName}_mask_${index}.jpg`);
+    await fs.copyFile(
+      cent_image,
+      path.join(cent_red, `${imageName}_${index}_.jpg`)
+    );
+    await fs.copyFile(
+      avg_image,
+      path.join(avg_red, `${imageName}_${index}_.jpg`)
+    );
+    await fs.copyFile(
+      seg_image,
+      path.join(seg_red, `${imageName}_mask_${index}.jpg`)
+    );
+  });
+  pink.map(async (index: number) => {
+    const cent_image = path.join(centImgPath, `${imageName}_${index}_.jpg`);
+    const avg_image = path.join(avgImgPath, `${imageName}_${index}_.jpg`);
+    const seg_image = path.join(segImgPath, `${imageName}_mask_${index}.jpg`);
+    await fs.copyFile(
+      cent_image,
+      path.join(cent_pink, `${imageName}_${index}_.jpg`)
+    );
+    await fs.copyFile(
+      avg_image,
+      path.join(avg_pink, `${imageName}_${index}_.jpg`)
+    );
+    await fs.copyFile(
+      seg_image,
+      path.join(seg_pink, `${imageName}_mask_${index}.jpg`)
+    );
+  });
+  const centrgbData = await fs.readFile(
+    path.join(centImgPath, "centroid_rgbs_per_cluster.txt"),
+    "utf8"
+  );
+  const centrgbValues: string[] = centrgbData
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line);
+  const centRedFilePath = path.join(cent_red, `${imageName}_red_centroid.txt`);
+  const CentRedsValues = red
+    .map((line) => centrgbValues[line] + ` ${imageName} ${line}`)
+    .join("\n");
+  await fs.writeFile(centRedFilePath, CentRedsValues, "utf-8", (err) => {
+    if (err) {
+      console.error("Error writing to file", err);
+    } else {
+      console.log("File has been saved.");
+    }
+  });
+  const centPinkFilePath = path.join(
+    cent_pink,
+    `${imageName}_pink_centroid.txt`
+  );
+  const CentPinksValues = pink
+    .map((line) => centrgbValues[line] + ` ${imageName} ${line}`)
+    .join("\n");
+  await fs.writeFile(centPinkFilePath, CentPinksValues, "utf-8", (err) => {
+    if (err) {
+      console.error("Error writing to file", err);
+    } else {
+      console.log("File has been saved.");
+    }
+  });
+  const avgrgbData = await fs.readFile(
+    path.join(avgImgPath, "avg_rgbs_per_cluster.txt"),
+    "utf8"
+  );
+  const avgrgbValues: string[] = avgrgbData
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line);
+  const avgRedFilePath = path.join(avg_red, `${imageName}_red_avg.txt`);
+  const avgRedsValues = red
+    .map((line) => avgrgbValues[line] + ` ${imageName} ${line}`)
+    .join("\n");
+  await fs.writeFile(avgRedFilePath, avgRedsValues, "utf-8", (err) => {
+    if (err) {
+      console.error("Error writing to file", err);
+    } else {
+      console.log("File has been saved.");
+    }
+  });
+  const avgPinkFilePath = path.join(avg_pink, `${imageName}_pink_avg.txt`);
+  const avgPinksValues = pink
+    .map((line) => avgrgbValues[line] + ` ${imageName} ${line}`)
+    .join("\n");
+  await fs.writeFile(avgPinkFilePath, avgPinksValues, "utf-8", (err) => {
+    if (err) {
+      console.error("Error writing to file", err);
+    } else {
+      console.log("File has been saved.");
+    }
+  });
+  res.json({
+    result: "success",
+  });
+});
+
+app.post("/api/need-recluster", express.json(), async (req, res) => {
+  const imageName = req.body.imageName;
+  const originalImgPath = path.join(
+    __dirname,
+    "../data",
+    "original",
+    imageName
+  );
+  const reclusterImgPath = path.join(
+    __dirname,
+    "../result",
+    "need_recluster",
+    imageName
+  );
+  await fs.copyFile(originalImgPath, reclusterImgPath);
+  res.json({
+    result: "Success",
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

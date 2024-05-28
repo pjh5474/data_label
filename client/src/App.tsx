@@ -10,6 +10,7 @@ import {
   Divider,
   AbsoluteCenter,
   Button,
+  useToast,
 } from "@chakra-ui/react";
 import ImageItem from "./components/ImageItem";
 import ClusterResult, { ClusterData } from "./components/ClusterResult";
@@ -22,7 +23,7 @@ const App: React.FC = () => {
     []
   );
   const [processedImage, setProcessedImage] = useState<string | null>(null);
-  const [redClusters, setRedClusters] = useState<string[]>([]);
+  const [redStatus, setRedStatus] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     fetch("http://localhost:3000/api/images")
@@ -41,7 +42,7 @@ const App: React.FC = () => {
       .then((response) => response.json())
       .then(() => {
         setSelectedImage(imageName);
-        setRedClusters([]);
+        setRedStatus([]);
         return fetch(`http://localhost:3000/api/image-data/${imageName}`);
       })
       .then((response) => response.json())
@@ -55,6 +56,13 @@ const App: React.FC = () => {
         ? prev.filter((name) => name !== imageName)
         : [...prev, imageName]
     );
+  };
+
+  const handleSwitchChange = (index: number) => {
+    setRedStatus((prev) => ({
+      ...prev,
+      [index]: !prev[index], // 현재 index에 해당하는 상태를 반전
+    }));
   };
 
   const handleRun = () => {
@@ -77,9 +85,9 @@ const App: React.FC = () => {
     }
   };
 
-  const handlePython = () => {
+  const handlePython = async () => {
     if (selectedImage) {
-      fetch("http://localhost:3000/api/run-python", {
+      await fetch("http://localhost:3000/api/run-python", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,6 +104,54 @@ const App: React.FC = () => {
         })
         .catch((err) => console.error("Error running Python script:", err));
     }
+  };
+
+  const toast = useToast();
+  const handleSave = async () => {
+    const selectedIndexes = selectedClusterImages.map((url) =>
+      clusterData.findIndex((item) => item.imageUrl === url)
+    );
+    const redIndexes = selectedIndexes.filter((index) => redStatus[index]);
+    const nonRedIndexes = selectedIndexes.filter((index) => !redStatus[index]);
+    await fetch("http://localhost:3000/api/save-result", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        imageName: selectedImage,
+        red: redIndexes,
+        pink: nonRedIndexes,
+      }),
+    }).then(() => {
+      toast({
+        title: "Results are saved",
+        description: "Make txt files & copied images",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    });
+  };
+
+  const handleRecluster = async () => {
+    await fetch("http://localhost:3000/api/need-recluster", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        imageName: selectedImage,
+      }),
+    }).then(() => {
+      toast({
+        title: "Need Recluster Done",
+        description: "Copied image to Need Recluster",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    });
   };
 
   return (
@@ -128,18 +184,24 @@ const App: React.FC = () => {
                   index={index}
                   selectedClusterImages={selectedClusterImages}
                   handleClusterImageSelect={handleClusterImageSelect}
-                  setRedClusters={setRedClusters}
-                  redClusters={redClusters}
+                  isRed={!!redStatus[index]}
+                  handleSwitchChange={() => handleSwitchChange(index)}
                 />
               ))}
             </SimpleGrid>
           </VStack>
-          <VStack>
-            <Button onClick={handleRun} colorScheme="blue" mt="5">
-              Make Mask
+          <VStack spacing="10">
+            <Button onClick={handleRun} colorScheme="blue" mt="12">
+              Copy Mask
             </Button>
             <Button onClick={handlePython} colorScheme="teal" size="md">
-              RUN
+              Make Mask
+            </Button>
+            <Button onClick={handleSave} colorScheme="purple" size="md">
+              Save Result
+            </Button>
+            <Button onClick={handleRecluster} colorScheme="red" size="md">
+              Need Recluster
             </Button>
           </VStack>
           <VStack spacing="5" align="start" ml="10">

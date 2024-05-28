@@ -8,7 +8,6 @@ import {
   FormControl,
   FormLabel,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
 
 export interface ClusterData {
   imageUrl: string;
@@ -21,21 +20,16 @@ export default function ClusterResult({
   index,
   selectedClusterImages,
   handleClusterImageSelect,
-  setRedClusters,
-  redClusters,
+  isRed,
+  handleSwitchChange,
 }: {
   data: ClusterData;
   index: number;
   selectedClusterImages: string[];
   handleClusterImageSelect: (imageName: string) => void;
-  setRedClusters: React.Dispatch<React.SetStateAction<string[]>>;
-  redClusters: string[];
+  isRed: boolean;
+  handleSwitchChange: (index: any) => void;
 }) {
-  const [isRed, setIsRed] = useState(false);
-  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsRed(event.target.checked);
-  };
-
   return (
     <VStack key={index} spacing={3} borderWidth="2px" p={1}>
       <Checkbox
