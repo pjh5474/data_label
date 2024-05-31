@@ -180,7 +180,7 @@ app.post("/api/save-result", express.json(), async (req, res) => {
     __dirname,
     "../data",
     imageName,
-    "segmented masks"
+    "clustering result"
   );
   const cent_red = path.join(__dirname, "../result", "cent_red");
   const cent_pink = path.join(__dirname, "../result", "cent_pink");
@@ -192,7 +192,7 @@ app.post("/api/save-result", express.json(), async (req, res) => {
   red.map(async (index: number) => {
     const cent_image = path.join(centImgPath, `${imageName}_${index}_.jpg`);
     const avg_image = path.join(avgImgPath, `${imageName}_${index}_.jpg`);
-    const seg_image = path.join(segImgPath, `${imageName}_mask_${index}.jpg`);
+    const seg_image = path.join(segImgPath, `${imageName}_result_${index}.jpg`);
     await fs.copyFile(
       cent_image,
       path.join(cent_red, `${imageName}_${index}_.jpg`)
@@ -203,13 +203,13 @@ app.post("/api/save-result", express.json(), async (req, res) => {
     );
     await fs.copyFile(
       seg_image,
-      path.join(seg_red, `${imageName}_mask_${index}.jpg`)
+      path.join(seg_red, `${imageName}_result_${index}.jpg`)
     );
   });
   pink.map(async (index: number) => {
     const cent_image = path.join(centImgPath, `${imageName}_${index}_.jpg`);
     const avg_image = path.join(avgImgPath, `${imageName}_${index}_.jpg`);
-    const seg_image = path.join(segImgPath, `${imageName}_mask_${index}.jpg`);
+    const seg_image = path.join(segImgPath, `${imageName}_result_${index}.jpg`);
     await fs.copyFile(
       cent_image,
       path.join(cent_pink, `${imageName}_${index}_.jpg`)
@@ -220,7 +220,7 @@ app.post("/api/save-result", express.json(), async (req, res) => {
     );
     await fs.copyFile(
       seg_image,
-      path.join(seg_pink, `${imageName}_mask_${index}.jpg`)
+      path.join(seg_pink, `${imageName}_result_${index}.jpg`)
     );
   });
   const centrgbData = await fs.readFile(
