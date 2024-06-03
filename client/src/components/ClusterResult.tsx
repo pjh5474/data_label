@@ -42,7 +42,6 @@ export default function ClusterResult({
           src={`http://localhost:3000${data.imageUrl}`}
           alt={`Cluster ${index}`}
           boxSize="180px"
-          objectFit="cover"
         />
       </Checkbox>
       <HStack>
