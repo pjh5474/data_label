@@ -20,7 +20,6 @@ export default function ImageItem({ name, onSelect }: ImageProps) {
         src={`http://localhost:3000/data/original/${name}`}
         alt={name}
         boxSize="100px"
-        objectFit="cover"
       />
       <Text p="2">{name}</Text>
     </Box>

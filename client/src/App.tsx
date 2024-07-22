@@ -31,8 +31,8 @@ const App: React.FC = () => {
       .then((data) => setImages(data));
   }, []);
 
-  const handleImageSelect = (imageName: string) => {
-    fetch("http://localhost:3000/api/copy-image", {
+  const handleImageSelect = async (imageName: string) => {
+    await fetch("http://localhost:3000/api/copy-image", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -41,13 +41,16 @@ const App: React.FC = () => {
     })
       .then((response) => response.json())
       .then(() => {
-        setSelectedImage(imageName);
         setRedStatus([]);
+        setSelectedClusterImages([]);
         return fetch(`http://localhost:3000/api/image-data/${imageName}`);
       })
       .then((response) => response.json())
       .then((data) => setClusterData(data))
       .catch((err) => console.error("Error fetching image data:", err));
+
+    setSelectedImage(imageName);
+    console.log(selectedImage);
   };
 
   const handleClusterImageSelect = (imageName: string) => {
@@ -65,11 +68,11 @@ const App: React.FC = () => {
     }));
   };
 
-  const handleRun = () => {
+  const handleRun = async () => {
     if (selectedImage) {
-      console.log(selectedImage);
+      console.log("Copy Mask", selectedImage);
       console.log(selectedClusterImages);
-      fetch("http://localhost:3000/api/select-images", {
+      await fetch("http://localhost:3000/api/select-images", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +162,7 @@ const App: React.FC = () => {
       <Heading as="h1" mb="5">
         Image Data Labelling
       </Heading>
-      <HStack wrap="wrap">
+      <HStack wrap="wrap" maxH="50vh" overflowY={"scroll"}>
         {images.map((image) => (
           <ImageItem key={image} name={image} onSelect={handleImageSelect} />
         ))}
